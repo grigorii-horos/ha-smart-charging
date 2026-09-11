@@ -1,0 +1,9 @@
+node_modules/
+cards/node_modules/
+*.pyc
+__pycache__/
+.DS_Store
+.vscode/
+.idea/
+
+# dist/ is deliberately not ignored: HACS installs the built file from the repo.

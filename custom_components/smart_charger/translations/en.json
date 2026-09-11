@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Smart Charger Socket",
+        "description": "Select the switch controlling the socket and the sensor measuring its power draw.",
+        "data": {
+          "name": "Charger Name",
+          "switch": "Power Switch",
+          "power": "Power Sensor"
+        }
+      },
+      "device": {
+        "title": "Add Device to Charger",
+        "description": "Configure smart devices (phones, watches, tablets) that can be plugged into this charger. Currently added: {device_count} devices. Leave empty to finish.",
+        "data": {
+          "name": "Device Name",
+          "battery_level": "Battery Level Sensor",
+          "battery_state": "Battery State Sensor",
+          "charger_type": "Charger Type Sensor",
+          "min_charge": "Min Charge Limit (%)",
+          "max_charge": "Max Charge Limit (%)",
+          "is_watch": "Is Watch (Dedicated Cradle)",
+          "exclusive_switch": "Exclusive Switch (cradle socket)",
+          "add_another": "Add another device"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Smart Charger Settings",
+        "data": {
+          "name": "Charger Name",
+          "switch": "Power Switch",
+          "power": "Power Sensor"
+        }
+      }
+    }
+  },
+  "services": {
+    "force_100": {
+      "name": "Force 100% Charge",
+      "description": "Force charging socket on until 100% is reached."
+    },
+    "stop": {
+      "name": "Stop Charging",
+      "description": "Immediately stop charging and turn off the socket."
+    }
+  }
+}

@@ -1,0 +1,21 @@
+force_100:
+  name: Force 100% Charge
+  description: Force charging socket on until 100% is reached (or 3-hour safety timeout).
+  fields:
+    charger_id:
+      name: Charger ID
+      description: ID or switch entity of the charger.
+      example: switch.device_plug_livingroom
+      selector:
+        text:
+
+stop:
+  name: Stop Charging
+  description: Immediately stop charging and turn off the socket.
+  fields:
+    charger_id:
+      name: Charger ID
+      description: ID or switch entity of the charger.
+      example: switch.device_plug_livingroom
+      selector:
+        text:
