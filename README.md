@@ -4,57 +4,71 @@
 [![Home Assistant 2026.9+](https://img.shields.io/badge/Home%20Assistant-2026.9%2B-41BDF5.svg)](https://www.home-assistant.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An intelligent, battery-preserving smart charging system for Home Assistant:
-1. **Backend Integration (`custom_components/smart_charger`)**: An asynchronous state-machine integration that handles power jump detection, automatic device identification via Companion App sensors, dual-limit battery protection (e.g. 70% - 90% or 40% - 75%), probe cycles (15m/30m), hysteresis restarts, and safety cutoffs.
-2. **Frontend Lovelace Cards (`ha-smart-charging-card.js`)**: Reusable Lovelace cards built with Lit + TypeScript following the native Home Assistant design system (`ha-tile-container`, `ha-tile-icon`, `ha-tile-info`, `renderLevels`, HA design tokens) to display charging sockets, real-time power draw, connected devices, battery bars, and quick 100% controls.
+An intelligent, battery-preserving smart charging system for Home Assistant that combines an **asynchronous backend state machine** (`custom_components/smart_charger`) with **native Lovelace cards** (`ha-smart-charging-card.js`) designed to match the clean aesthetic of [ha-plugins](https://github.com/grigorii-horos/ha-plugins).
 
 ---
 
-## Key Features
+## ⚡ Overview
 
-- **Automatic Device Recognition**:
-  When a device is connected, the power draw jumps (> 2.5W). After a 15-second grace period, the integration verifies which device transitioned to charging state within a 120-second freshness window.
-- **Battery Health Preservation (Dual Limits)**:
-  - Configurable minimum and maximum charge thresholds (e.g., 70% min to 90% max for phones/tablets, 40% min to 75% max for smartwatches).
-  - Automatically cuts power when upper threshold is reached.
-  - Automatically restarts charging if battery drops below lower threshold while plugged in (hysteresis).
-- **Periodic Probe Cycles (15m / 30m)**:
-  - 15 minutes after stopping, the socket briefly turns on for 12 seconds to probe power draw.
-  - If power $\le 1.5$ W, the cable is empty and socket remains off in `idle`.
-  - If power $> 1.5$ W and device is still connected, it goes to sleep for 30 minutes before probing again.
-- **Force 100% Manual Override**:
-  - Physical switch turn-on or quick "100%" card button activates manual 100% charging with a 3-hour safety cutoff.
-- **Generic Device Fallback**:
-  - Power banks, flashlights, and non-smart devices without HA companion app charge safely without infinite loop.
+Lithium-ion batteries degrade fastest when held at 100% charge while hot. Standard smart plugs either leave chargers running indefinitely or rely on primitive wattage cutoffs that don't know what device is plugged in or what its current battery level is.
+
+**Smart Charging solves this:**
+- Dynamically identifies which device (phone, watch, tablet) was just plugged into a shared socket.
+- Charges within an optimal battery health range (e.g., **70% – 90%** for phones/tablets, **40% – 75%** for smartwatches).
+- Automatically turns off the socket when the target limit is reached.
+- Periodically probes the cable (**15m / 30m cycles**) to know when the device is unplugged or still resting.
+- Automatically tops up if the battery drops below the minimum limit while still plugged in (**hysteresis**).
+- Supports manual override to **100%** at any time with a 3-hour safety cutoff.
+- Provides beautiful Lovelace cards with real-time wattage, connected device badges, and battery progress bars.
 
 ---
 
-## Lovelace Cards
+## 📱 Lovelace Cards
 
-### 1. `horos-chargers-card` (Overview List Card)
-Displays all charging sockets in a single clean overview card with real-time connected device badges, power draw in Watts, battery progress bars with limit markers, and quick 100% / power toggle controls.
+Built with **Lit + TypeScript** utilizing Home Assistant's native component hierarchy (`ha-tile-container`, `ha-tile-icon`, `ha-tile-info`, `renderLevels`, and HA CSS design tokens).
 
+### 1. Overview List Card: `custom:horos-chargers-card`
+Shows all your charging sockets in a single clean overview card with real-time connected device badges, power draw, battery progress bars with limit markers, and quick 100% / power toggle controls.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ⚡  Умная зарядка                                    1 / 2  │
+├─────────────────────────────────────────────────────────────┤
+│  🔌  Розетка в гостиной   [ 📱 Телефон Григория ]    [ 100% ] │
+│      Зарядка · 14.2 W                                  [◉]  │
+│      [███████████████████████████░░░|░░░░░] 88% / 90%       │
+├─────────────────────────────────────────────────────────────┤
+│  🔌  Розетка для часов    [ Свободно ]               [ 100% ] │
+│      Свободно · 0 W                                    [○]  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Card Configuration
 ```yaml
 type: custom:horos-chargers-card
 title: Умная зарядка
 chargers:
-  - switch: switch.device_plug_livingroom
-    power: sensor.device_plug_livingroom_power
+  - entity: sensor.rozetka_v_gostinoi_status
     name: Розетка в гостиной
-  - switch: switch.device_plug_watch
-    power: sensor.device_plug_watch_power
-    name: Розетка для часов
+  - switch: switch.device_usb_plug_3_ports_livingroom_l2
+    name: Часы (кредл)
 ```
+*(If `chargers` is omitted, the card automatically discovers all `smart_charger` entities on your system!)*
 
-*(If `chargers` is omitted, the card automatically discovers all smart charger sensors and power sockets on your system!)*
+---
 
-### 2. `horos-charger-tile` (Single Socket Tile)
-A single tile matching Home Assistant's native Tile card geometry. Shows socket name, connected device, power draw and battery percentage as large values on the right, and a battery level bar underneath.
+### 2. Single Charger Tile: `custom:horos-charger-tile`
+A standalone tile that fits seamlessly into grid and sections dashboards, providing big value readings for power draw and battery level, plus level row progress bars and action chips.
 
 ```yaml
 type: custom:horos-charger-tile
-entity: sensor.livingroom_charger_status
-# or direct entities:
+entity: sensor.rozetka_v_gostinoi_status
+name: Розетка в гостиной
+```
+
+Or using raw entity bindings:
+```yaml
+type: custom:horos-charger-tile
 switch: switch.device_plug_livingroom
 power: sensor.device_plug_livingroom_power
 name: Розетка в гостиной
@@ -62,45 +76,134 @@ name: Розетка в гостиной
 
 ---
 
-## Installation
+## 🧠 Charging Algorithm & State Machine
 
-### Via HACS
-1. Open **HACS** → **⋮** (top right) → **Custom repositories**.
-2. Paste the repository URL: `https://github.com/grigorii-horos/ha-smart-charging`.
-3. Select category: **Integration** (for backend) or **Dashboard** (for frontend).
-4. Click **Install**.
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Initial State
+    Idle --> Identifying: Power Jump (> 2.5W)
+    
+    state Identifying {
+        [*] --> Delay15s: Wait 15s for Companion App
+        Delay15s --> MatchDevice: Check battery state & freshness (< 120s)
+    }
 
-### Manual Installation
-1. Copy `custom_components/smart_charger/` into your Home Assistant directory under `config/custom_components/smart_charger/`.
-2. Copy `dist/ha-smart-charging-card.js` into `config/www/`.
-3. In Home Assistant, go to **Settings** → **Dashboards** → **⋮** → **Resources** and add `/local/ha-smart-charging-card.js` as a JavaScript Module.
-4. Restart Home Assistant.
+    Identifying --> Charging: Smart Device Matched (< Max Limit)
+    Identifying --> Manual100: Device Already >= Max Limit
+    Identifying --> Generic: No Smart Device Matched (Earbuds/Powerbank)
 
----
+    Charging --> Cooldown: Battery Reached Max (e.g. 90%)
+    
+    Cooldown --> Probe15m: After 15 minutes
+    state Probe15m {
+        [*] --> Test12s: Turn on socket for 12s
+        Test12s --> Evaluate: Check power
+    }
 
-## Configuration
+    Evaluate --> Idle: Power <= 1.5W (Cable Empty)
+    Evaluate --> Sleep: Power > 1.5W (Device Still Plugged)
+    Evaluate --> Charging: Different Device Plugged In
+    
+    Sleep --> Probe30m: After 30 minutes
+    Probe30m --> Evaluate
 
-### UI Configuration (Recommended)
-1. Go to **Settings** → **Devices & Services** → **Add Integration**.
-2. Search for **Smart Charger**.
-3. Select your socket switch and power sensor.
-4. Add your devices (phone, watch, tablet) with their respective battery level, battery state, and charger type sensors from the Home Assistant Companion App.
+    Cooldown --> Charging: Battery drops < Min Limit (Hysteresis)
+    Sleep --> Charging: Battery drops < Min Limit (Hysteresis)
 
-### Development & Publishing
-To build the frontend bundle and publish directly to your Home Assistant host:
-
-```bash
-# Build frontend
-cd cards
-npm install
-npm run build
-
-# Deploy to live HA host
-python3 script/publish.py
+    Charging --> Idle: Power drops < 0.8W (Unplugged)
+    Generic --> Idle: Power drops < 0.8W (Unplugged)
+    
+    any --> Manual100: Manual Toggle / 100% Button Pressed
+    Manual100 --> Idle: 3-Hour Safety Cutoff Reached
 ```
 
 ---
 
-## License
+## 🚀 Installation
 
-MIT © Grigorii Horos
+### Option 1: Via HACS (Recommended)
+1. Open **HACS** in Home Assistant.
+2. Click **⋮** (top right) → **Custom repositories**.
+3. Add repository URL: `https://github.com/grigorii-horos/ha-smart-charging`.
+4. Category: **Integration** (or **Dashboard** for frontend card only).
+5. Click **Install** and restart Home Assistant.
+
+### Option 2: Manual Installation
+1. Copy `custom_components/smart_charger/` to your Home Assistant directory:
+   `<config>/custom_components/smart_charger/`
+2. Copy `dist/ha-smart-charging-card.js` to `<config>/www/ha-smart-charging-card.js`.
+3. In Home Assistant: **Settings** → **Dashboards** → **⋮** → **Resources** → Add `/local/ha-smart-charging-card.js` as a **JavaScript Module**.
+4. Restart Home Assistant.
+
+---
+
+## ⚙️ Configuration (UI)
+
+1. In Home Assistant, navigate to **Settings** → **Devices & Services** → **Add Integration**.
+2. Search for **Smart Charger**.
+3. **Step 1 — Socket**:
+   - **Charger Name**: e.g. `Розетка в гостиной`
+   - **Power Switch**: `switch.device_plug_livingroom`
+   - **Power Sensor**: `sensor.device_plug_livingroom_power`
+4. **Step 2 — Devices**:
+   - Add your devices (phone, watch, tablet) using their Home Assistant Companion App sensors:
+     - **Battery Level Sensor**: e.g. `sensor.phone_grigorii_battery_level`
+     - **Battery State Sensor**: e.g. `sensor.phone_grigorii_battery_state`
+     - **Charger Type Sensor**: e.g. `sensor.phone_grigorii_charger_type`
+     - **Min Charge Limit (%)**: e.g. `70`
+     - **Max Charge Limit (%)**: e.g. `90`
+     - **Exclusive Switch** (optional): dedicated cradle socket (e.g. watch charging dock)
+
+---
+
+## 🛠️ Created Entities & Services
+
+### Entities
+- `sensor.<name>_status`: Main status sensor reporting `idle`, `charging`, `cooldown`, `sleep`, `manual_100`, or `generic`, with rich attributes:
+  - `power_w`: real-time power draw
+  - `connected_device`: current identified device name
+  - `battery_level`: device battery percentage
+  - `min_charge` / `max_charge`: target limits
+  - `is_probing`: boolean probe test indicator
+- `button.<name>_force_100`: Force charge to 100%
+- `button.<name>_stop`: Stop charging immediately
+- `switch.<name>_power`: Power switch entity
+
+### Services
+- `smart_charger.force_100`: Force charge socket to 100% (with 3-hour safety cutoff).
+  ```yaml
+  action: smart_charger.force_100
+  data:
+    charger_id: switch.device_plug_livingroom
+  ```
+- `smart_charger.stop`: Turn off charging socket and cancel active timers.
+  ```yaml
+  action: smart_charger.stop
+  data:
+    charger_id: switch.device_plug_livingroom
+  ```
+
+---
+
+## 💻 Development & Building
+
+```bash
+# Clone the repository
+git clone https://github.com/grigorii-horos/ha-smart-charging.git
+cd ha-smart-charging/cards
+
+# Install dependencies
+npm install
+
+# Build production bundle
+npm run build
+
+# Deploy directly to your Home Assistant host
+python3 ../script/publish.py
+```
+
+---
+
+## 📄 License
+
+MIT © [Grigorii Horos](https://github.com/grigorii-horos)
