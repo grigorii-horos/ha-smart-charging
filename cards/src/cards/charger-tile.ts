@@ -260,6 +260,8 @@ export class HorosChargerTile extends BaseTileCard {
         level: batteryLevel,
         icon: state === "charging" ? "mdi:battery-charging" : "mdi:battery",
         alarm: minCharge !== null ? batteryLevel < minCharge : batteryLevel < 20,
+        minLimit: minCharge ?? undefined,
+        maxLimit: maxCharge ?? undefined,
       });
     }
 

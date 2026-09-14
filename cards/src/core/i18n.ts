@@ -23,6 +23,8 @@ const EN: Dict = {
   "charger.probing": "Probing cable...",
   "charger.connected": "Connected",
   "charger.limit": "Limit {min}% – {max}%",
+  "charger.min_limit": "Min {val}%",
+  "charger.max_limit": "Max {val}%",
   "charger.noChargers": "No chargers configured",
 };
 

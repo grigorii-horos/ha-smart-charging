@@ -36,6 +36,10 @@ export interface LevelRow {
   alarm?: boolean;
   /** The alarm glyph: running out and overflowing get different ones. */
   alarmIcon?: string;
+  /** Bottom cutoff / min limit threshold (0..100). */
+  minLimit?: number;
+  /** Top cutoff / max limit threshold (0..100). */
+  maxLimit?: number;
 }
 
 export interface LevelsOptions {
@@ -166,6 +170,26 @@ export const levelStyles = css`
     min-width: 8px;
   }
 
+  .level .bar .tick-min,
+  .level .bar .tick-max {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    border-radius: 1px;
+    z-index: 2;
+    transform: translateX(-50%);
+  }
+
+  .level .bar .tick-min {
+    background: var(--info-color, #0288d1);
+  }
+
+  .level .bar .tick-max {
+    background: var(--primary-text-color);
+    opacity: 0.85;
+  }
+
   .level .value {
     flex: none;
     min-width: 3.2em;
@@ -229,6 +253,20 @@ export function renderLevels(
                   clamp(row.level) - clamp(row.from ?? 0)
                 )}%"
               ></span>
+              ${row.minLimit !== undefined
+                ? html`<span
+                    class="tick-min"
+                    style="left: ${clamp(row.minLimit)}%;"
+                    title="Min limit: ${row.minLimit}%"
+                  ></span>`
+                : nothing}
+              ${row.maxLimit !== undefined
+                ? html`<span
+                    class="tick-max"
+                    style="left: ${clamp(row.maxLimit)}%;"
+                    title="Max limit: ${row.maxLimit}%"
+                  ></span>`
+                : nothing}
             </span>
             <span class="value">${row.text}</span>
           </button>

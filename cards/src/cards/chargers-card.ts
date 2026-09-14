@@ -65,8 +65,8 @@ export class HorosChargersCard extends LitElement {
     }
 
     .card-header {
-      height: 56px;
-      min-height: 56px;
+      height: 64px;
+      min-height: 64px;
       box-sizing: border-box;
       display: flex;
       align-items: center;
@@ -131,13 +131,12 @@ export class HorosChargersCard extends LitElement {
     }
 
     .charger-item {
-      height: 56px;
-      min-height: 56px;
+      min-height: 64px;
       box-sizing: border-box;
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 16px;
+      flex-direction: column;
+      justify-content: center;
+      padding: 7px 16px;
       cursor: pointer;
       transition: background-color 0.2s ease;
       background: transparent;
@@ -147,6 +146,13 @@ export class HorosChargersCard extends LitElement {
     :host([filled]) .charger-item {
       flex: 1 1 0;
       height: auto;
+    }
+
+    .charger-main-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
     }
 
     .charger-item:hover {
@@ -271,49 +277,175 @@ export class HorosChargersCard extends LitElement {
       flex-shrink: 0;
     }
 
-    .inline-battery {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
+    .battery-summary-val {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
       flex-shrink: 0;
     }
 
-    .inline-battery-bar {
+    .battery-full-bar-wrap {
+      width: 100%;
       position: relative;
-      display: inline-block;
-      width: 42px;
-      height: 6px;
-      background: var(--divider-color, rgba(128, 128, 128, 0.2));
-      border-radius: 9999px;
-      overflow: visible;
-      vertical-align: middle;
+      padding: 13px 0;
+      box-sizing: border-box;
+      margin-top: 2px;
+      user-select: none;
     }
 
-    .inline-battery-fill {
+    .battery-full-bar-track {
+      position: relative;
+      width: 100%;
+      height: 7px;
+      background: var(--divider-color, rgba(128, 128, 128, 0.18));
+      border-radius: 9999px;
+      overflow: visible;
+    }
+
+    .target-range-band {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(3, 169, 244, 0.16);
+      border-radius: 3px;
+      border-left: 1.5px dashed rgba(3, 169, 244, 0.5);
+      border-right: 1.5px dashed rgba(3, 169, 244, 0.5);
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .battery-full-bar-fill {
       position: absolute;
       top: 0;
       bottom: 0;
       left: 0;
       border-radius: 9999px;
-      transition: width 0.3s ease;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
     }
 
-    .inline-battery-limit {
+    .battery-full-bar-fill.charging-anim {
+      background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.28) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      background-size: 200% 100%;
+      animation: chargeShimmer 2s infinite linear;
+    }
+
+    @keyframes chargeShimmer {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .battery-thumb {
+      position: absolute;
+      top: 50%;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--card-background-color, #ffffff);
+      border: 2px solid var(--thumb-color, var(--primary-color));
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 3;
+      transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .battery-thumb.pulsing {
+      animation: thumbPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes thumbPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.25);
+      }
+      50% {
+        box-shadow: 0 0 0 5px rgba(67, 160, 71, 0.45);
+      }
+    }
+
+    .track-tick {
       position: absolute;
       top: -2px;
       bottom: -2px;
       width: 2px;
-      background: var(--primary-text-color);
-      opacity: 0.8;
       border-radius: 1px;
-      z-index: 1;
+      z-index: 2;
+      pointer-events: none;
+      transform: translateX(-50%);
     }
 
-    .inline-battery-text {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--primary-text-color);
+    .track-tick.tick-bottom {
+      background: var(--info-color, #0288d1);
+    }
+
+    .track-tick.tick-top {
+      background: var(--primary-text-color);
+      opacity: 0.85;
+    }
+
+    .cutoff-indicator {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      pointer-events: none;
+      white-space: nowrap;
+      line-height: 1;
       font-variant-numeric: tabular-nums;
+    }
+
+    .cutoff-indicator.cutoff-top {
+      top: 0;
+      flex-direction: column;
+    }
+
+    .cutoff-indicator.cutoff-bottom {
+      bottom: 0;
+      flex-direction: column;
+    }
+
+    .cutoff-caret-top {
+      width: 0;
+      height: 0;
+      border-left: 3.5px solid transparent;
+      border-right: 3.5px solid transparent;
+      border-top: 4px solid var(--primary-text-color);
+      opacity: 0.85;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .cutoff-caret-bottom {
+      width: 0;
+      height: 0;
+      border-left: 3.5px solid transparent;
+      border-right: 3.5px solid transparent;
+      border-bottom: 4px solid var(--info-color, #0288d1);
+      margin-bottom: 2px;
+      flex-shrink: 0;
+    }
+
+    .cutoff-label {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .cutoff-top .cutoff-label {
+      color: var(--primary-text-color);
+      opacity: 0.9;
+    }
+
+    .cutoff-bottom .cutoff-label {
+      color: var(--info-color, #0288d1);
     }
 
     .row-actions {
@@ -673,93 +805,169 @@ export class HorosChargersCard extends LitElement {
         class="charger-item"
         @click=${() => this._openMoreInfo(targetEntity)}
       >
-        <div
-          class="socket-icon"
-          style="--icon-color: ${iconColor}; --icon-bg: ${iconBg};"
-        >
-          <ha-icon .icon=${icon}></ha-icon>
-        </div>
-
-        <div class="socket-info">
-          <div class="primary-line">
-            <span class="socket-name">${c.name}</span>
-            ${c.connectedDevice
-              ? html`
-                  <span class="device-pill ${c.state}">
-                    <ha-icon icon=${devIcon} style="--mdc-icon-size: 13px;"></ha-icon>
-                    ${c.connectedDevice}
-                  </span>
-                `
-              : c.state === "generic"
-              ? html`
-                  <span class="device-pill generic">
-                    ${t(this.hass, "charger.generic")}
-                  </span>
-                `
-              : html`
-                  <span class="device-pill idle">
-                    ${t(this.hass, "charger.idle")}
-                  </span>
-                `}
+        <div class="charger-main-row">
+          <div
+            class="socket-icon"
+            style="--icon-color: ${iconColor}; --icon-bg: ${iconBg};"
+          >
+            <ha-icon .icon=${icon}></ha-icon>
           </div>
-          <div class="secondary-line">
-            <span class="state-text">${stateText}</span>
+
+          <div class="socket-info">
+            <div class="primary-line">
+              <span class="socket-name">${c.name}</span>
+              ${c.connectedDevice
+                ? html`
+                    <span class="device-pill ${c.state}">
+                      <ha-icon icon=${devIcon} style="--mdc-icon-size: 13px;"></ha-icon>
+                      ${c.connectedDevice}
+                    </span>
+                  `
+                : c.state === "generic"
+                ? html`
+                    <span class="device-pill generic">
+                      ${t(this.hass, "charger.generic")}
+                    </span>
+                  `
+                : html`
+                    <span class="device-pill idle">
+                      ${t(this.hass, "charger.idle")}
+                    </span>
+                  `}
+            </div>
+            <div class="secondary-line">
+              <span class="state-text">${stateText}</span>
+              ${c.isSwitchOn
+                ? html`
+                    <span class="dot-sep">·</span>
+                    <span class="power-val">${c.powerW.toFixed(c.powerW >= 10 ? 0 : 1)} W</span>
+                  `
+                : nothing}
+              ${c.batteryLevel !== null
+                ? html`
+                    <span class="dot-sep">·</span>
+                    <span
+                      class="battery-summary-val"
+                      style="color: ${batteryColor(c.batteryLevel)};"
+                    >
+                      ${Math.round(c.batteryLevel)}%
+                    </span>
+                  `
+                : nothing}
+            </div>
+          </div>
+
+          <div class="row-actions">
             ${c.isSwitchOn
               ? html`
-                  <span class="dot-sep">·</span>
-                  <span class="power-val">${c.powerW.toFixed(c.powerW >= 10 ? 0 : 1)} W</span>
+                  <button
+                    class="btn-100 ${c.state === "manual_100" ? "active" : ""}"
+                    title="${t(this.hass, "charger.force_100")}"
+                    @click=${(e: Event) => this._handleForce100(e, c)}
+                  >
+                    100%
+                  </button>
                 `
               : nothing}
-            ${c.batteryLevel !== null
+            ${c.switchEntity
               ? html`
-                  <span class="dot-sep">·</span>
-                  <span class="inline-battery">
-                    <span class="inline-battery-bar">
-                      <span
-                        class="inline-battery-fill"
-                        style="width: ${c.batteryLevel}%; background-color: ${batteryColor(c.batteryLevel)};"
-                      ></span>
-                      ${c.maxCharge
-                        ? html`
-                            <span
-                              class="inline-battery-limit"
-                              style="left: ${c.maxCharge}%;"
-                              title="Target limit: ${c.maxCharge}%"
-                            ></span>
-                          `
-                        : nothing}
-                    </span>
-                    <span class="inline-battery-text">
-                      ${Math.round(c.batteryLevel)}%${c.maxCharge ? ` / ${c.maxCharge}%` : ""}
-                    </span>
-                  </span>
+                  <ha-switch
+                    .checked=${c.isSwitchOn}
+                    @click=${(e: Event) => e.stopPropagation()}
+                    @change=${(e: Event) => this._handleToggleSocket(e, c)}
+                  ></ha-switch>
                 `
               : nothing}
           </div>
         </div>
 
-        <div class="row-actions">
-          ${c.isSwitchOn
+        ${this._renderBatteryBar(c)}
+      </div>
+    `;
+  }
+
+  private _renderBatteryBar(c: ResolvedCharger) {
+    if (c.batteryLevel === null) return nothing;
+
+    const level = Math.max(0, Math.min(100, c.batteryLevel));
+    const minCharge =
+      c.minCharge !== null ? Math.max(0, Math.min(100, c.minCharge)) : null;
+    const maxCharge =
+      c.maxCharge !== null ? Math.max(0, Math.min(100, c.maxCharge)) : null;
+
+    const getTransform = (percent: number) => {
+      if (percent <= 6) return "translateX(0%)";
+      if (percent >= 94) return "translateX(-100%)";
+      return "translateX(-50%)";
+    };
+
+    return html`
+      <div class="battery-full-bar-wrap">
+        ${maxCharge !== null
+          ? html`
+              <div
+                class="cutoff-indicator cutoff-top"
+                style="left: ${maxCharge}%; transform: ${getTransform(maxCharge)};"
+                title="${t(this.hass, "charger.max_limit", { val: maxCharge })}"
+              >
+                <span class="cutoff-label">${t(this.hass, "charger.max_limit", { val: maxCharge })}</span>
+                <span class="cutoff-caret-top"></span>
+              </div>
+            `
+          : nothing}
+
+        <div class="battery-full-bar-track">
+          ${minCharge !== null && maxCharge !== null && maxCharge > minCharge
             ? html`
-                <button
-                  class="btn-100 ${c.state === "manual_100" ? "active" : ""}"
-                  title="${t(this.hass, "charger.force_100")}"
-                  @click=${(e: Event) => this._handleForce100(e, c)}
-                >
-                  100%
-                </button>
+                <div
+                  class="target-range-band"
+                  style="left: ${minCharge}%; width: ${maxCharge - minCharge}%;"
+                  title="${t(this.hass, "charger.limit", { min: minCharge, max: maxCharge })}"
+                ></div>
               `
             : nothing}
-          ${c.switchEntity
+
+          <div
+            class="battery-full-bar-fill ${c.state === "charging" ? "charging-anim" : ""}"
+            style="width: ${level}%; background-color: ${batteryColor(level)};"
+          ></div>
+
+          <div
+            class="battery-thumb ${c.state === "charging" ? "pulsing" : ""}"
+            style="left: ${level}%; --thumb-color: ${batteryColor(level)};"
+          ></div>
+
+          ${minCharge !== null
             ? html`
-                <ha-switch
-                  .checked=${c.isSwitchOn}
-                  @click=${(e: Event) => e.stopPropagation()}
-                  @change=${(e: Event) => this._handleToggleSocket(e, c)}
-                ></ha-switch>
+                <div
+                  class="track-tick tick-bottom"
+                  style="left: ${minCharge}%;"
+                ></div>
+              `
+            : nothing}
+
+          ${maxCharge !== null
+            ? html`
+                <div
+                  class="track-tick tick-top"
+                  style="left: ${maxCharge}%;"
+                ></div>
               `
             : nothing}
         </div>
+
+        ${minCharge !== null
+          ? html`
+              <div
+                class="cutoff-indicator cutoff-bottom"
+                style="left: ${minCharge}%; transform: ${getTransform(minCharge)};"
+                title="${t(this.hass, "charger.min_limit", { val: minCharge })}"
+              >
+                <span class="cutoff-caret-bottom"></span>
+                <span class="cutoff-label">${t(this.hass, "charger.min_limit", { val: minCharge })}</span>
+              </div>
+            `
+          : nothing}
       </div>
     `;
   }
