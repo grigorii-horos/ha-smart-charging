@@ -1,6 +1,10 @@
 import { LitElement, css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
-import type { HomeAssistant, LovelaceCardEditor } from "../core/types";
+import type {
+  HomeAssistant,
+  LovelaceCardEditor,
+  LovelaceGridOptions,
+} from "../core/types";
 import { registerCard } from "../core/register";
 import { batteryColor } from "../core/labels";
 import { t } from "../core/i18n";
@@ -17,6 +21,7 @@ export interface ChargersCardConfig {
   type: string;
   title?: string;
   chargers?: (string | ChargerConfigItem)[];
+  grid_options?: LovelaceGridOptions;
 }
 
 interface ResolvedCharger {
@@ -38,31 +43,63 @@ export class HorosChargersCard extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --ha-card-border-radius: var(--ha-border-radius-lg, 12px);
+    }
+
+    :host([filled]) {
+      height: 100%;
     }
 
     ha-card {
-      padding: var(--ha-space-3, 12px) var(--ha-space-4, 16px);
+      height: 100%;
       background: var(--ha-card-background, var(--card-background-color, white));
       border-radius: var(--ha-card-border-radius, var(--ha-border-radius-lg, 12px));
       box-shadow: var(--ha-card-box-shadow, none);
-      border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, #e0e0e0));
+      border: var(--ha-card-border-width, 1px) solid
+        var(--ha-card-border-color, var(--divider-color, #e0e0e0));
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0;
     }
 
     .card-header {
+      height: 56px;
+      min-height: 56px;
+      box-sizing: border-box;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding-bottom: 12px;
-      margin-bottom: 4px;
-      border-bottom: 1px solid var(--divider-color, rgba(128, 128, 128, 0.15));
+      gap: 12px;
+      padding: 0 16px;
+      border-bottom: 1px solid
+        var(--divider-color, rgba(128, 128, 128, 0.12));
+      background: transparent;
+      flex-shrink: 0;
+    }
+
+    :host([filled]) .card-header {
+      flex: 1 1 0;
+      height: auto;
     }
 
     .header-icon {
-      color: var(--primary-color);
-      --mdc-icon-size: 22px;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--ha-border-radius-pill, 9999px);
       display: flex;
       align-items: center;
+      justify-content: center;
+      background: var(
+        --secondary-background-color,
+        rgba(128, 128, 128, 0.1)
+      );
+      color: var(--primary-color);
+      flex-shrink: 0;
+    }
+
+    .header-icon ha-icon {
+      --mdc-icon-size: 20px;
     }
 
     .header-title {
@@ -70,49 +107,60 @@ export class HorosChargersCard extends LitElement {
       font-weight: 600;
       color: var(--primary-text-color);
       flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .header-badge {
       font-size: var(--ha-font-size-s, 12px);
       color: var(--secondary-text-color);
-      background: var(--secondary-background-color, rgba(128, 128, 128, 0.1));
-      padding: 2px 8px;
+      background: var(
+        --secondary-background-color,
+        rgba(128, 128, 128, 0.1)
+      );
+      padding: 3px 10px;
       border-radius: var(--ha-border-radius-pill, 9999px);
       font-weight: 500;
+      flex-shrink: 0;
     }
 
     .chargers-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 8px;
+      display: contents;
     }
 
     .charger-item {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: var(--ha-border-radius-md, 8px);
-      background: var(--secondary-background-color, rgba(128, 128, 128, 0.04));
-      border: 1px solid var(--divider-color, rgba(128, 128, 128, 0.08));
-      transition: background-color 0.2s ease;
-    }
-
-    .charger-item:hover {
-      background: var(--state-hover-color, rgba(128, 128, 128, 0.08));
-    }
-
-    .row-top {
+      height: 56px;
+      min-height: 56px;
+      box-sizing: border-box;
       display: flex;
       align-items: center;
       gap: 12px;
+      padding: 0 16px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
+      background: transparent;
+      flex-shrink: 0;
+    }
+
+    :host([filled]) .charger-item {
+      flex: 1 1 0;
+      height: auto;
+    }
+
+    .charger-item:hover {
+      background: var(--state-hover-color, rgba(128, 128, 128, 0.05));
+    }
+
+    .charger-item:not(:last-child) {
+      border-bottom: 1px solid
+        var(--divider-color, rgba(128, 128, 128, 0.08));
     }
 
     .socket-icon {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: var(--ha-border-radius-pill, 9999px);
       display: flex;
       align-items: center;
@@ -132,6 +180,7 @@ export class HorosChargersCard extends LitElement {
       min-width: 0;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       gap: 2px;
     }
 
@@ -141,6 +190,7 @@ export class HorosChargersCard extends LitElement {
       gap: 8px;
       white-space: nowrap;
       overflow: hidden;
+      line-height: 18px;
     }
 
     .socket-name {
@@ -153,16 +203,18 @@ export class HorosChargersCard extends LitElement {
 
     .device-pill {
       font-size: 11px;
-      padding: 2px 7px;
+      line-height: 14px;
+      padding: 1px 6px;
       border-radius: 6px;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       max-width: 140px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .device-pill.charging {
@@ -194,17 +246,72 @@ export class HorosChargersCard extends LitElement {
     .secondary-line {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-size: var(--ha-font-size-s, 12px);
+      line-height: 16px;
       color: var(--secondary-text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .state-text {
+      flex-shrink: 0;
     }
 
     .dot-sep {
-      opacity: 0.6;
+      opacity: 0.5;
+      flex-shrink: 0;
     }
 
     .power-val {
       font-weight: 600;
+      color: var(--primary-text-color);
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+
+    .inline-battery {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .inline-battery-bar {
+      position: relative;
+      display: inline-block;
+      width: 42px;
+      height: 6px;
+      background: var(--divider-color, rgba(128, 128, 128, 0.2));
+      border-radius: 9999px;
+      overflow: visible;
+      vertical-align: middle;
+    }
+
+    .inline-battery-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+
+    .inline-battery-limit {
+      position: absolute;
+      top: -2px;
+      bottom: -2px;
+      width: 2px;
+      background: var(--primary-text-color);
+      opacity: 0.8;
+      border-radius: 1px;
+      z-index: 1;
+    }
+
+    .inline-battery-text {
+      font-size: 11px;
+      font-weight: 500;
       color: var(--primary-text-color);
       font-variant-numeric: tabular-nums;
     }
@@ -217,10 +324,10 @@ export class HorosChargersCard extends LitElement {
     }
 
     .btn-100 {
-      padding: 3px 8px;
+      padding: 2px 7px;
       font-size: 11px;
       font-weight: 600;
-      border-radius: 12px;
+      border-radius: 10px;
       border: 1px solid var(--divider-color, rgba(128, 128, 128, 0.25));
       background: var(--card-background-color, white);
       color: var(--primary-text-color);
@@ -228,72 +335,27 @@ export class HorosChargersCard extends LitElement {
       transition: all 0.2s ease;
     }
 
-    .btn-100:hover {
-      background: var(--warning-color, #ffa600);
-      color: white;
-      border-color: transparent;
-    }
-
+    .btn-100:hover,
     .btn-100.active {
       background: var(--warning-color, #ffa600);
       color: white;
       border-color: transparent;
     }
 
-    .battery-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding-top: 4px;
-      border-top: 1px dashed var(--divider-color, rgba(128, 128, 128, 0.12));
-    }
-
-    .battery-bar-wrap {
-      position: relative;
-      height: 7px;
-      background: var(--bar-track, rgba(128, 128, 128, 0.18));
-      border-radius: 9999px;
-      overflow: visible;
-    }
-
-    .battery-bar-fill {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      border-radius: 9999px;
-      transition: width 0.4s ease-in-out;
-    }
-
-    .battery-bar-limit {
-      position: absolute;
-      top: -2px;
-      bottom: -2px;
-      width: 2px;
-      background: var(--primary-text-color);
-      opacity: 0.7;
-      border-radius: 1px;
-      z-index: 2;
-    }
-
-    .battery-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: var(--secondary-text-color);
-    }
-
-    .battery-meta .pct {
-      font-weight: 600;
-      color: var(--primary-text-color);
-    }
-
     .empty-state {
-      padding: 16px;
-      text-align: center;
+      height: 56px;
+      min-height: 56px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--secondary-text-color);
       font-size: var(--ha-font-size-s, 13px);
+    }
+
+    :host([filled]) .empty-state {
+      flex: 1 1 0;
+      height: auto;
     }
   `;
 
@@ -317,6 +379,28 @@ export class HorosChargersCard extends LitElement {
 
   public setConfig(config: ChargersCardConfig): void {
     this._config = config;
+  }
+
+  private _chargerCount(): number {
+    if (this._config?.chargers && this._config.chargers.length > 0) {
+      return this._config.chargers.length;
+    }
+    const resolved = this._resolveChargers();
+    return resolved.length > 0 ? resolved.length : 1;
+  }
+
+  public getCardSize(): number {
+    return 1 + this._chargerCount();
+  }
+
+  public getGridOptions(): LovelaceGridOptions {
+    const rows = 1 + this._chargerCount();
+    return {
+      columns: 12,
+      rows: this._config?.grid_options?.rows ?? rows,
+      min_rows: rows,
+      min_columns: 6,
+    };
   }
 
   private _resolveChargers(): ResolvedCharger[] {
@@ -585,95 +669,97 @@ export class HorosChargersCard extends LitElement {
     const targetEntity = c.statusEntity ?? c.switchEntity;
 
     return html`
-      <div class="charger-item">
+      <div
+        class="charger-item"
+        @click=${() => this._openMoreInfo(targetEntity)}
+      >
         <div
-          class="row-top"
-          @click=${() => this._openMoreInfo(targetEntity)}
+          class="socket-icon"
+          style="--icon-color: ${iconColor}; --icon-bg: ${iconBg};"
         >
-          <div
-            class="socket-icon"
-            style="--icon-color: ${iconColor}; --icon-bg: ${iconBg};"
-          >
-            <ha-icon .icon=${icon}></ha-icon>
-          </div>
+          <ha-icon .icon=${icon}></ha-icon>
+        </div>
 
-          <div class="socket-info">
-            <div class="primary-line">
-              <span class="socket-name">${c.name}</span>
-              ${c.connectedDevice
-                ? html`
-                    <span class="device-pill ${c.state}">
-                      <ha-icon icon=${devIcon} style="--mdc-icon-size: 13px;"></ha-icon>
-                      ${c.connectedDevice}
-                    </span>
-                  `
-                : c.state === "generic"
-                ? html`
-                    <span class="device-pill generic">
-                      ${t(this.hass, "charger.generic")}
-                    </span>
-                  `
-                : html`
-                    <span class="device-pill idle">
-                      ${t(this.hass, "charger.idle")}
-                    </span>
-                  `}
-            </div>
-            <div class="secondary-line">
-              <span>${stateText}</span>
-              <span class="dot-sep">·</span>
-              <span class="power-val">${c.powerW.toFixed(c.powerW >= 10 ? 0 : 1)} W</span>
-            </div>
-          </div>
-
-          <div class="row-actions">
-            <button
-              class="btn-100 ${c.state === "manual_100" ? "active" : ""}"
-              title="${t(this.hass, "charger.force_100")}"
-              @click=${(e: Event) => this._handleForce100(e, c)}
-            >
-              100%
-            </button>
-            ${c.switchEntity
+        <div class="socket-info">
+          <div class="primary-line">
+            <span class="socket-name">${c.name}</span>
+            ${c.connectedDevice
               ? html`
-                  <ha-switch
-                    .checked=${c.isSwitchOn}
-                    @click=${(e: Event) => e.stopPropagation()}
-                    @change=${(e: Event) => this._handleToggleSocket(e, c)}
-                  ></ha-switch>
+                  <span class="device-pill ${c.state}">
+                    <ha-icon icon=${devIcon} style="--mdc-icon-size: 13px;"></ha-icon>
+                    ${c.connectedDevice}
+                  </span>
+                `
+              : c.state === "generic"
+              ? html`
+                  <span class="device-pill generic">
+                    ${t(this.hass, "charger.generic")}
+                  </span>
+                `
+              : html`
+                  <span class="device-pill idle">
+                    ${t(this.hass, "charger.idle")}
+                  </span>
+                `}
+          </div>
+          <div class="secondary-line">
+            <span class="state-text">${stateText}</span>
+            ${c.isSwitchOn
+              ? html`
+                  <span class="dot-sep">·</span>
+                  <span class="power-val">${c.powerW.toFixed(c.powerW >= 10 ? 0 : 1)} W</span>
+                `
+              : nothing}
+            ${c.batteryLevel !== null
+              ? html`
+                  <span class="dot-sep">·</span>
+                  <span class="inline-battery">
+                    <span class="inline-battery-bar">
+                      <span
+                        class="inline-battery-fill"
+                        style="width: ${c.batteryLevel}%; background-color: ${batteryColor(c.batteryLevel)};"
+                      ></span>
+                      ${c.maxCharge
+                        ? html`
+                            <span
+                              class="inline-battery-limit"
+                              style="left: ${c.maxCharge}%;"
+                              title="Target limit: ${c.maxCharge}%"
+                            ></span>
+                          `
+                        : nothing}
+                    </span>
+                    <span class="inline-battery-text">
+                      ${Math.round(c.batteryLevel)}%${c.maxCharge ? ` / ${c.maxCharge}%` : ""}
+                    </span>
+                  </span>
                 `
               : nothing}
           </div>
         </div>
 
-        ${c.batteryLevel !== null
-          ? html`
-              <div class="battery-row">
-                <div class="battery-bar-wrap">
-                  <span
-                    class="battery-bar-fill"
-                    style="width: ${c.batteryLevel}%; background-color: ${batteryColor(c.batteryLevel)};"
-                  ></span>
-                  ${c.maxCharge
-                    ? html`
-                        <span
-                          class="battery-bar-limit"
-                          style="left: ${c.maxCharge}%;"
-                          title="Target limit: ${c.maxCharge}%"
-                        ></span>
-                      `
-                    : nothing}
-                </div>
-                <div class="battery-meta">
-                  <span>${c.connectedDevice}</span>
-                  <span class="pct">
-                    ${Math.round(c.batteryLevel)}%
-                    ${c.maxCharge ? ` / ${c.maxCharge}%` : ""}
-                  </span>
-                </div>
-              </div>
-            `
-          : nothing}
+        <div class="row-actions">
+          ${c.isSwitchOn
+            ? html`
+                <button
+                  class="btn-100 ${c.state === "manual_100" ? "active" : ""}"
+                  title="${t(this.hass, "charger.force_100")}"
+                  @click=${(e: Event) => this._handleForce100(e, c)}
+                >
+                  100%
+                </button>
+              `
+            : nothing}
+          ${c.switchEntity
+            ? html`
+                <ha-switch
+                  .checked=${c.isSwitchOn}
+                  @click=${(e: Event) => e.stopPropagation()}
+                  @change=${(e: Event) => this._handleToggleSocket(e, c)}
+                ></ha-switch>
+              `
+            : nothing}
+        </div>
       </div>
     `;
   }
