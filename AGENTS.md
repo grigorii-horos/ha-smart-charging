@@ -18,6 +18,7 @@ ha-smart-charging/
   cards/src/                        # Frontend: Lit + TypeScript Lovelace cards
   dist/                             # Committed bundle (HACS and direct dashboard install)
   script/publish.py                 # Build, sync to live host, and invalidate Lovelace cache
+  BACKLOG.md                        # Completed features, height/grid concepts & future roadmap
 ```
 
 ### Backend (`custom_components/smart_charger/`)

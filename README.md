@@ -28,18 +28,17 @@ Lithium-ion batteries degrade fastest when held at 100% charge while hot. Standa
 Built with **Lit + TypeScript** utilizing Home Assistant's native component hierarchy (`ha-tile-container`, `ha-tile-icon`, `ha-tile-info`, `renderLevels`, and HA CSS design tokens).
 
 ### 1. Overview List Card: `custom:horos-chargers-card`
-Shows all your charging sockets in a single clean overview card with real-time connected device badges, power draw, battery progress bars with limit markers, and quick 100% / power toggle controls.
+Shows all your charging sockets in a single clean overview card with real-time connected device badges, power draw, battery progress bars with limit markers, and quick 100% / power toggle controls. Each socket item is strictly 1 standard unit of height (`56px`), matching Home Assistant grid tile conventions.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  ⚡  Smart Charging                                   1 / 2  │
 ├─────────────────────────────────────────────────────────────┤
 │  🔌  Living Room Socket   [ 📱 Grigorii's Phone ]     [ 100% ] │
-│      Charging · 14.2 W                                 [◉]  │
-│      [███████████████████████████░░░|░░░░░] 88% / 90%       │
+│      Charging · 14.2 W · [██████▲████▼░░] 88%          [◉]  │
 ├─────────────────────────────────────────────────────────────┤
-│  🔌  Watch Socket          [ Idle ]                   [ 100% ] │
-│      Idle · 0 W                                        [○]  │
+│  🔌  Watch Socket          [ Idle ]                            │
+│      Idle                                              [○]  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -201,6 +200,13 @@ npm run build
 # Deploy directly to your Home Assistant host
 python3 ../script/publish.py
 ```
+
+---
+ 
+## 🧭 Backlog & Architecture
+
+- **[BACKLOG.md](BACKLOG.md)** — Completed milestones, architectural principles (including the strict 56px standard unit height rule), and the upcoming development roadmap.
+- **[AGENTS.md](AGENTS.md)** — Universal guidelines, code standards, and invariants for AI agents and developers.
 
 ---
 
