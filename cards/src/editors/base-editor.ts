@@ -2,7 +2,6 @@ import { LitElement, css, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { HomeAssistant, LovelaceCardEditor } from "../core/types";
 import { ensureFeaturesEditor } from "../core/ha-internals";
-import { languageOf } from "../core/i18n";
 
 export interface SchemaItem {
   name: string;
@@ -104,30 +103,21 @@ export abstract class FormCardEditor
    * different cards — "Battery", "Sensor battery", "Main device battery".
    */
   protected pick(dicts: {
-    ru: Record<string, string>;
+    ru?: Record<string, string>;
     en: Record<string, string>;
   }): Record<string, string> {
-    return languageOf(this.hass) === "ru" ? dicts.ru : dicts.en;
+    return dicts.en;
   }
 
   /** Helper text under fields. The stock tile has one under colour. */
   protected _computeHelper = (item: SchemaItem): string | undefined =>
     item.name === "color"
-      ? this.pick({
-          ru: {
-            color:
-              "Неактивное состояние (например, off или closed) окрашено не будет.",
-          },
-          en: {
-            color:
-              "Inactive state (for example, off or closed) will not be coloured.",
-          },
-        }).color
+      ? "Inactive state (for example, off or closed) will not be coloured."
       : undefined;
 
   protected _computeLabel = (item: SchemaItem): string =>
     this.labels[item.name] ??
-    this.pick({ ru: COMMON_LABELS_RU, en: COMMON_LABELS_EN })[item.name] ??
+    COMMON_LABELS_EN[item.name] ??
     item.name;
 
   protected fireConfigChanged(config: Record<string, unknown>): void {
@@ -285,7 +275,7 @@ export abstract class BaseCardEditor extends FormCardEditor {
     // itself, so they can be removed here like any other feature.
     const features = (this._config?.features ??
       this.defaultFeatures()) as unknown[];
-    const labels = this.pick({ ru: COMMON_LABELS_RU, en: COMMON_LABELS_EN });
+    const labels = COMMON_LABELS_EN;
 
     /*
      * The position selector belongs to Home Assistant, so it is taken whole:
@@ -294,26 +284,15 @@ export abstract class BaseCardEditor extends FormCardEditor {
      * what keeps them identical to the tile's and translated wherever HA is;
      * ours are a fallback for an HA old enough to lack the keys.
      */
-    const fallback = this.pick({
-      ru: {
-        bottom: "Снизу",
-        bottom_description: "Все features друг под другом",
-        inline: "В строке",
-        inline_description:
-          "Features в две колонки, начиная со строки с названием",
-        helper_vertical:
-          "При вертикальном содержимом всегда отображаются снизу",
-      },
-      en: {
-        bottom: "Bottom",
-        bottom_description: "Displays all features stacked",
-        inline: "Inline",
-        inline_description:
-          "Displays features in two columns, starting next to the name",
-        helper_vertical:
-          "Always displayed at the bottom if the content layout is vertical",
-      },
-    });
+    const fallback = {
+      bottom: "Bottom",
+      bottom_description: "Displays all features stacked",
+      inline: "Inline",
+      inline_description:
+        "Displays features in two columns, starting next to the name",
+      helper_vertical:
+        "Always displayed at the bottom if the content layout is vertical",
+    };
     const tr = (key: string, alt: string): string =>
       this.hass?.localize(`ui.panel.lovelace.editor.card.tile.${key}`) || alt;
 
@@ -417,7 +396,7 @@ export const contentSection = (
    * the name is typed as plain text and there is nothing to suggest to the icon.
    */
   entityField: string | undefined,
-  language: string,
+  _language?: string,
   /** Our own extension of the section: what to pull out large on the right. */
   extra: SchemaItem[] = []
 ): SchemaItem => ({
@@ -471,7 +450,7 @@ export const contentSection = (
           options: [
             {
               value: "horizontal",
-              label: language === "ru" ? "Горизонтальная" : "Horizontal",
+              label: "Horizontal",
               image: {
                 src: "/static/images/form/tile_content_layout_horizontal.svg",
                 src_dark:
@@ -481,7 +460,7 @@ export const contentSection = (
             },
             {
               value: "vertical",
-              label: language === "ru" ? "Вертикальная" : "Vertical",
+              label: "Vertical",
               image: {
                 src: "/static/images/form/tile_content_layout_vertical.svg",
                 src_dark:
@@ -538,26 +517,6 @@ export const interactionsSection = (
   ],
 });
 
-export const COMMON_LABELS_RU: Record<string, string> = {
-  content: "Содержимое",
-  state_content: "Что показывать про сущность",
-  time_format: "Формат времени",
-  interactions: "Взаимодействия",
-  icon: "Иконка",
-  color: "Цвет",
-  content_layout: "Раскладка",
-  show_entity_picture: "Показывать картинку сущности",
-  hide_state: "Скрыть состояние",
-  features: "Features",
-  features_position: "Расположение features",
-  tap_action: "Тап по карточке",
-  hold_action: "Долгое нажатие на карточку",
-  double_tap_action: "Двойной тап по карточке",
-  icon_tap_action: "Тап по иконке",
-  icon_hold_action: "Долгое нажатие на иконку",
-  icon_double_tap_action: "Двойной тап по иконке",
-};
-
 export const COMMON_LABELS_EN: Record<string, string> = {
   content: "Content",
   state_content: "State content",
@@ -578,8 +537,8 @@ export const COMMON_LABELS_EN: Record<string, string> = {
   icon_double_tap_action: "Double tap on icon",
 };
 
-/** The former name: default labels for whatever is not translated yet. */
-export const COMMON_LABELS = COMMON_LABELS_RU;
+/** Default labels for common fields. */
+export const COMMON_LABELS = COMMON_LABELS_EN;
 
 /** An entity selector narrowed down to a domain and a device class. */
 export const entitySelector = (

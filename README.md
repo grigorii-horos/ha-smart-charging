@@ -32,26 +32,26 @@ Shows all your charging sockets in a single clean overview card with real-time c
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  ⚡  Умная зарядка                                    1 / 2  │
+│  ⚡  Smart Charging                                   1 / 2  │
 ├─────────────────────────────────────────────────────────────┤
-│  🔌  Розетка в гостиной   [ 📱 Телефон Григория ]    [ 100% ] │
-│      Зарядка · 14.2 W                                  [◉]  │
+│  🔌  Living Room Socket   [ 📱 Grigorii's Phone ]     [ 100% ] │
+│      Charging · 14.2 W                                 [◉]  │
 │      [███████████████████████████░░░|░░░░░] 88% / 90%       │
 ├─────────────────────────────────────────────────────────────┤
-│  🔌  Розетка для часов    [ Свободно ]               [ 100% ] │
-│      Свободно · 0 W                                    [○]  │
+│  🔌  Watch Socket          [ Idle ]                   [ 100% ] │
+│      Idle · 0 W                                        [○]  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 #### Card Configuration
 ```yaml
 type: custom:horos-chargers-card
-title: Умная зарядка
+title: Smart Charging
 chargers:
-  - entity: sensor.rozetka_v_gostinoi_status
-    name: Розетка в гостиной
+  - entity: sensor.living_room_charger_status
+    name: Living Room Socket
   - switch: switch.device_usb_plug_3_ports_livingroom_l2
-    name: Часы (кредл)
+    name: Watch (Cradle)
 ```
 *(If `chargers` is omitted, the card automatically discovers all `smart_charger` entities on your system!)*
 
@@ -62,8 +62,8 @@ A standalone tile that fits seamlessly into grid and sections dashboards, provid
 
 ```yaml
 type: custom:horos-charger-tile
-entity: sensor.rozetka_v_gostinoi_status
-name: Розетка в гостиной
+entity: sensor.living_room_charger_status
+name: Living Room Socket
 ```
 
 Or using raw entity bindings:
@@ -71,7 +71,7 @@ Or using raw entity bindings:
 type: custom:horos-charger-tile
 switch: switch.device_plug_livingroom
 power: sensor.device_plug_livingroom_power
-name: Розетка в гостиной
+name: Living Room Socket
 ```
 
 ---
@@ -142,7 +142,7 @@ stateDiagram-v2
 1. In Home Assistant, navigate to **Settings** → **Devices & Services** → **Add Integration**.
 2. Search for **Smart Charger**.
 3. **Step 1 — Socket**:
-   - **Charger Name**: e.g. `Розетка в гостиной`
+   - **Charger Name**: e.g. `Living Room Socket`
    - **Power Switch**: `switch.device_plug_livingroom`
    - **Power Sensor**: `sensor.device_plug_livingroom_power`
 4. **Step 2 — Devices**:

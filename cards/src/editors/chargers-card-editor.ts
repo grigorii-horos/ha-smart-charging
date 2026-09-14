@@ -22,8 +22,8 @@ export class HorosChargersCardEditor extends FormCardEditor {
 
   protected get labels(): Record<string, string> {
     return {
-      title: "Title / Заголовок",
-      chargers: "Chargers / Розетки (leave empty to auto-discover)",
+      title: "Title",
+      chargers: "Chargers (leave empty to auto-discover)",
     };
   }
 }

@@ -22,20 +22,12 @@ export class HorosChargerTileEditor extends BaseCardEditor {
   }
 
   protected get labels(): Record<string, string> {
-    return this.pick({
-      ru: {
-        name: "Название",
-        entity: "Сенсор статуса (smart_charger)",
-        switch: "Выключатель розетки",
-        power: "Датчик мощности",
-      },
-      en: {
-        name: "Name",
-        entity: "Status sensor (smart_charger)",
-        switch: "Socket switch",
-        power: "Power sensor",
-      },
-    });
+    return {
+      name: "Name",
+      entity: "Status sensor (smart_charger)",
+      switch: "Socket switch",
+      power: "Power sensor",
+    };
   }
 }
 

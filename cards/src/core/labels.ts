@@ -28,8 +28,7 @@ export function stripBatterySuffix(
   name: string | undefined
 ): string | undefined {
   if (!name) return undefined;
-  // The Russian word is there on purpose: entity names follow the HA UI language.
-  const stripped = name.replace(/[\s—-]*(battery(\s+level)?|заряд)\s*$/i, "").trim();
+  const stripped = name.replace(/[\s—-]*(battery(\s+level)?)\s*$/i, "").trim();
   return stripped || name;
 }
 
@@ -42,10 +41,9 @@ export function stripMoistureSuffix(
   name: string | undefined
 ): string | undefined {
   if (!name) return undefined;
-  // The Russian is there on purpose: entity names follow the HA UI language.
   const stripped = name
     .replace(
-      /[\s—-]*(soil\s+)?(moisture|влажность(\s+почвы)?)\s*$/i,
+      /[\s—-]*(soil\s+)?moisture\s*$/i,
       ""
     )
     .trim();

@@ -321,11 +321,9 @@ export class HorosChargerTile extends BaseTileCard {
 
 registerCard("horos-charger-tile", HorosChargerTile, {
   type: "horos-charger-tile",
-  name: { ru: "Умная зарядка (плитка)", en: "Smart charger (tile)" },
-  description: {
-    ru: "Розетка умной зарядки: подключенное устройство, мощность и уровень батареи",
-    en: "Smart charging socket: connected device, power draw and battery level",
-  },
+  name: "Smart charger (tile)",
+  description:
+    "Smart charging socket: connected device, power draw and battery level",
   preview: true,
 });
 

@@ -310,7 +310,7 @@ export class HorosChargersCard extends LitElement {
 
   public static getStubConfig(): Partial<ChargersCardConfig> {
     return {
-      title: "Умная зарядка",
+      title: "Smart Charging",
       chargers: [],
     };
   }
@@ -576,9 +576,9 @@ export class HorosChargersCard extends LitElement {
 
     // Device icon
     let devIcon = "mdi:cellphone";
-    if (c.connectedDevice?.toLowerCase().includes("watch") || c.connectedDevice?.toLowerCase().includes("часы")) {
+    if (c.connectedDevice?.toLowerCase().includes("watch")) {
       devIcon = "mdi:watch";
-    } else if (c.connectedDevice?.toLowerCase().includes("tablet") || c.connectedDevice?.toLowerCase().includes("планшет")) {
+    } else if (c.connectedDevice?.toLowerCase().includes("tablet")) {
       devIcon = "mdi:tablet";
     }
 
@@ -681,11 +681,9 @@ export class HorosChargersCard extends LitElement {
 
 registerCard("horos-chargers-card", HorosChargersCard, {
   type: "horos-chargers-card",
-  name: { ru: "Список умных зарядок", en: "Smart chargers list" },
-  description: {
-    ru: "Список всех розеток зарядки с отображением подключенных устройств и уровней заряда",
-    en: "List of all charging sockets showing connected devices and battery levels",
-  },
+  name: "Smart chargers list",
+  description:
+    "List of all charging sockets showing connected devices and battery levels",
   preview: true,
 });
 

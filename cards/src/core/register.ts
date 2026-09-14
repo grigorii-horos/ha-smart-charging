@@ -39,10 +39,7 @@ function currentLanguage(): string {
   return languageOf(app?.hass);
 }
 
-export interface CardTexts {
-  ru: string;
-  en: string;
-}
+export type CardTexts = string | { ru?: string; en: string };
 
 export function registerCard(
   tag: string,
@@ -72,10 +69,15 @@ export function registerCard(
     type: entry.type,
     preview: entry.preview,
     get name() {
-      return entry.name[currentLanguage() === "ru" ? "ru" : "en"];
+      return typeof entry.name === "string"
+        ? entry.name
+        : (entry.name[currentLanguage() === "ru" ? "ru" : "en"] ?? entry.name.en);
     },
     get description() {
-      return entry.description[currentLanguage() === "ru" ? "ru" : "en"];
+      return typeof entry.description === "string"
+        ? entry.description
+        : (entry.description[currentLanguage() === "ru" ? "ru" : "en"] ??
+            entry.description.en);
     },
     getEntitySuggestion: entry.suggest,
   } as CustomCardEntry);
